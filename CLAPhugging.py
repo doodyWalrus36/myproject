@@ -10,6 +10,7 @@ from scipy.spatial.distance import cosine
 import pandas as pd
 import torch
 import json
+import matplotlib.pyplot as plt
 
 # Set SSL_CERT_FILE environment variable
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -65,11 +66,13 @@ if os.path.exists(embeddings_file):
 else:
     embeddings_dict = {}
 
-results = []
+results_yes = []
+results_other = []
 
 for entry in data:
     original_work = entry['Original Work']
     second_song = entry['Second Song']
+    court_decision = entry['Court decision']
 
     # Check if the embeddings already exist
     if original_work in embeddings_dict:
@@ -101,18 +104,62 @@ for entry in data:
     similarity = compute_similarity(embedding_original, embedding_second)
     print(f"Similarity between {original_work} and {second_song}: {similarity}")
     
-    results.append({
+    result = {
         "Original Work": original_work,
         "Second Song": second_song,
-        "Similarity": similarity
-    })
+        "Similarity": similarity,
+        "Court decision": court_decision
+    }
+
+    if court_decision == "Yes":
+        results_yes.append(result)
+    else:
+        results_other.append(result)
 
 # Save embeddings to a file for future use
 with open(embeddings_file, 'w') as f:
     json.dump(embeddings_dict, f)
 
-for result in results:
-    print(f"Original Work: {result['Original Work']}, Second Song: {result['Second Song']}, Similarity: {result['Similarity']}")
+# Visualization
+def plot_similarity_vs_court_decision(results_yes, results_other):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    # Plot for court decision "Yes"
+    ax.scatter(
+        [r["Original Work"] for r in results_yes],
+        [r["Similarity"] for r in results_yes],
+        color='green', label='Court Decision: Yes', s=100
+    )
 
-df_results = pd.DataFrame(results)
-print(df_results)
+    # Plot for court decision not "Yes"
+    ax.scatter(
+        [r["Original Work"] for r in results_other],
+        [r["Similarity"] for r in results_other],
+        color='red', label='Court Decision: Not Yes', s=100
+    )
+
+    # Add a threshold line at 0.5 for clarity
+    ax.axhline(y=0.5, color='gray', linestyle='--', linewidth=1)
+
+    # Customize the plot
+    ax.set_xlabel("Original Work", fontsize=14)
+    ax.set_ylabel("Cosine Similarity", fontsize=14)
+    ax.set_title("Cosine Similarity vs Court Decision", fontsize=16)
+    ax.legend(fontsize=12)
+    ax.set_xticks(range(len(results_yes) + len(results_other)))
+    ax.set_xticklabels([r["Original Work"] for r in results_yes] + [r["Original Work"] for r in results_other], rotation=90, fontsize=12)
+
+    plt.show()
+
+# Plot the graph
+plot_similarity_vs_court_decision(results_yes, results_other)
+
+# DataFrames
+df_results_yes = pd.DataFrame(results_yes)
+df_results_other = pd.DataFrame(results_other)
+
+print("\nDataFrame where court decision was 'Yes':")
+print(df_results_yes)
+
+print("\nDataFrame where court decision was not 'Yes':")
+print(df_results_other)
