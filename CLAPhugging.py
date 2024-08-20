@@ -11,6 +11,18 @@ import pandas as pd
 import torch
 import json
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
+from imblearn.over_sampling import SMOTE
+from sklearn.exceptions import UndefinedMetricWarning
+import warnings
+
+# Suppress warnings
+warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
 
 # Set SSL_CERT_FILE environment variable
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -67,7 +79,8 @@ else:
     embeddings_dict = {}
 
 results_yes = []
-results_other = []
+results_no = []
+results_control = []
 
 for entry in data:
     original_work = entry['Original Work']
@@ -113,53 +126,98 @@ for entry in data:
 
     if court_decision == "Yes":
         results_yes.append(result)
+    elif court_decision == "No":
+        results_no.append(result)
     else:
-        results_other.append(result)
+        results_control.append(result)
 
 # Save embeddings to a file for future use
 with open(embeddings_file, 'w') as f:
     json.dump(embeddings_dict, f)
 
-# Visualization
-def plot_similarity_vs_court_decision(results_yes, results_other):
-    fig, ax = plt.subplots(figsize=(12, 6))
-    
-    # Plot for court decision "Yes"
-    ax.scatter(
-        [r["Original Work"] for r in results_yes],
-        [r["Similarity"] for r in results_yes],
-        color='green', label='Court Decision: Yes', s=100
-    )
-
-    # Plot for court decision not "Yes"
-    ax.scatter(
-        [r["Original Work"] for r in results_other],
-        [r["Similarity"] for r in results_other],
-        color='red', label='Court Decision: Not Yes', s=100
-    )
-
-    # Add a threshold line at 0.5 for clarity
-    ax.axhline(y=0.5, color='gray', linestyle='--', linewidth=1)
-
-    # Customize the plot
-    ax.set_xlabel("Original Work", fontsize=14)
-    ax.set_ylabel("Cosine Similarity", fontsize=14)
-    ax.set_title("Cosine Similarity vs Court Decision", fontsize=16)
-    ax.legend(fontsize=12)
-    ax.set_xticks(range(len(results_yes) + len(results_other)))
-    ax.set_xticklabels([r["Original Work"] for r in results_yes] + [r["Original Work"] for r in results_other], rotation=90, fontsize=12)
-
-    plt.show()
-
-# Plot the graph
-plot_similarity_vs_court_decision(results_yes, results_other)
-
-# DataFrames
+# Create DataFrames
 df_results_yes = pd.DataFrame(results_yes)
-df_results_other = pd.DataFrame(results_other)
+df_results_no = pd.DataFrame(results_no)
+df_results_control = pd.DataFrame(results_control)
 
-print("\nDataFrame where court decision was 'Yes':")
-print(df_results_yes)
+# Visualization
+plt.figure(figsize=(12, 6))
 
-print("\nDataFrame where court decision was not 'Yes':")
-print(df_results_other)
+# Plotting results where court decision was "Yes"
+plt.scatter([result['Original Work'] for result in results_yes], 
+            [result['Similarity'] for result in results_yes], 
+            color='green', label='Yes')
+
+# Plotting results where court decision was "No"
+plt.scatter([result['Original Work'] for result in results_no], 
+            [result['Similarity'] for result in results_no], 
+            color='red', label='No')
+
+# Plotting results where court decision is the controlled group
+plt.scatter([result['Original Work'] for result in results_control], 
+            [result['Similarity'] for result in results_control], 
+            color='blue', label='Control')
+
+# Customize the plot
+plt.axhline(y=0.5, color='gray', linestyle='--')
+plt.xticks(rotation=90)
+plt.xlabel("Original Work")
+plt.ylabel("Cosine Similarity")
+plt.title("Cosine Similarity vs Court Decision")
+plt.legend(loc='upper right')
+plt.tight_layout()
+
+# Show the plot
+plt.show()
+
+# Prepare data for machine learning
+df_all = pd.concat([df_results_yes, df_results_no, df_results_control])
+X = df_all[['Similarity']]  # Use similarity and potentially other features
+y = df_all['Court decision']
+
+# Encode labels
+le = LabelEncoder()
+y_encoded = le.fit_transform(y)
+
+# Handle imbalanced dataset using SMOTE with adjusted k_neighbors
+smote = SMOTE(sampling_strategy='auto', random_state=42, k_neighbors=2)
+X_resampled, y_resampled = smote.fit_resample(X, y_encoded)
+
+# Split the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.3, random_state=42)
+
+# Initialize models with class_weight adjustment
+svm_model = SVC(kernel='linear', random_state=42, class_weight='balanced')
+rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
+dt_model = DecisionTreeClassifier(random_state=42, class_weight='balanced')
+gb_model = GradientBoostingClassifier(random_state=42)
+
+# Hyperparameter tuning with Grid Search
+param_grid_svm = {'C': [0.1, 1, 10]}
+param_grid_rf = {'n_estimators': [50, 100, 200], 'max_depth': [None, 10, 20]}
+param_grid_dt = {'max_depth': [None, 10, 20]}
+
+svm_grid = GridSearchCV(svm_model, param_grid_svm, cv=5)
+rf_grid = GridSearchCV(rf_model, param_grid_rf, cv=5)
+dt_grid = GridSearchCV(dt_model, param_grid_dt, cv=5)
+
+# Train models with the best parameters
+svm_grid.fit(X_train, y_train)
+rf_grid.fit(X_train, y_train)
+dt_grid.fit(X_train, y_train)
+gb_model.fit(X_train, y_train)
+
+# Evaluate models and display confusion matrix
+for model, name in zip([svm_grid, rf_grid, dt_grid, gb_model], 
+                       ['SVM', 'Random Forest', 'Decision Tree', 'Gradient Boosting']):
+    print(f"\n{name} Model:")
+    y_pred = model.predict(X_test)
+    print(classification_report(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+    
+    # Confusion Matrix
+    cm = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=le.classes_)
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title(f"{name} Confusion Matrix")
+    plt.show()
