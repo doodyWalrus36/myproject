@@ -14,7 +14,7 @@ I Want a New Drug (1984),Huey Lewis and the News,SONG_ID_23,https://www.youtube.
 Pour toi (1957),"Louis ""Loulou"" Gasté",SONG_ID_25,https://www.youtube.com/watch?v=t9l_gHcC6mw,Feelings (1976),Morris Albert,SONG_ID_26,https://www.youtube.com/watch?v=CyBcHUe4WeQ,Yes
 You Need Love (1963),Muddy Waters,SONG_ID_27,https://www.youtube.com/watch?v=pM8_HuQ0b34,Whole Lotta Love (1969),Led Zeppelin,SONG_ID_28,https://www.youtube.com/watch?v=HibBnC6SVk8,Yes
 Sugar Don't Bite (1984),Sam Harris,SONG_ID_29,https://www.youtube.com/watch?v=RkwH_wQxtuA,Papa Don't Preach (1986),Madonna,SONG_ID_30,https://www.youtube.com/watch?v=JcM94xM6dV8,Yes
-Just Another Night,Patrick Alley,SONG_ID_31,https://www.youtube.com/watch?v=D-bavvXleZ8,Just Another Night (1985),Mick Jagger,SONG_ID_32,https://www.youtube.com/watch?v=4Lum1anp7V8,Yes
+Just Another Night,Patrick Alley,SONG_ID_31,https://www.youtube.com/watch?v=D-bavvXleZ8,Just Another Night (1985),Mick Jagger,SONG_ID_32,https://www.youtube.com/watch?v=4Lum1anp7V8,No
 Run Through the Jungle (1970),Creedence Clearwater Revival,SONG_ID_33,https://www.youtube.com/watch?v=_7PUPNxsRQ0,The Old Man Down the Road (1984),John Fogerty,SONG_ID_34,https://www.youtube.com/watch?v=gzah7VD_PM4,No
 You Showed Me (1968),The Turtles,SONG_ID_35,https://www.youtube.com/watch?v=ItfoFXkhqGw,Transmitting Live from Mars (1989),De La Soul,SONG_ID_36,https://www.youtube.com/watch?v=7nFCOYP1Tow,Yes
 Babe I'm Gonna Leave You,Anne Bredon,SONG_ID_37,https://www.youtube.com/watch?v=8Gz-84vXQhA,Babe I'm Gonna Leave You (1969),Led Zeppelin,SONG_ID_38,https://www.youtube.com/watch?v=zX_wwlIZ6ko,Yes
@@ -33,3 +33,15 @@ Dive,Ed Sheeran,SONG_ID_61,https://www.youtube.com/watch?v=Wv2rLZmbPMA,Save Myse
 Supermarket Flowers,Ed Sheeran,SONG_ID_63,https://www.youtube.com/watch?v=bIB8EWqCPrQ,Nancy Mulligan,Ed Sheeran,SONG_ID_64,https://www.youtube.com/watch?v=VFlZXlfda6Y,Undecided
 Maps,Maroon 5,SONG_ID_65,https://www.youtube.com/watch?v=xj6fHiF8Osg,Tonight,FM Static,SONG_ID_66,https://www.youtube.com/watch?v=Unj9Ij_u0-E,Undecided
 Sugar,Maroon 5,SONG_ID_67,https://www.youtube.com/watch?v=iPcX6EpJI3o,Sunday Morning,Maroon 5,SONG_ID_68,https://www.youtube.com/watch?v=U9-f4Mosb_A,Undecided
+"""Let's Get It On"" (1973)",Marvin Gaye,SONG_ID_69,https://youtu.be/54LgyqSPfsQ?si=KDk0GG1zFo18MUzy,"""Thinking Out Loud"" (2014)",Ed Sheeran,SONG_ID_70,https://youtu.be/WpyfrixXBqU?si=Z1FoO_IKlSPWCxd_,No
+"""Oh Why"" (2015)",Sami Switch,SONG_ID_71,https://www.youtube.com/watch?v=GeH-ObndT7M,"""Shape of You"" (2017)",Ed Sheeran,SONG_ID_72,https://youtu.be/JGwWNGJdvx8?si=ogPkOOmVrtawSQYV,No
+"""If I Could Fly"" (2004)",Joe Satriani,SONG_ID_73,https://youtu.be/8RJmiMq1pOA?si=mgReCIsHZbX4YTya,"""Viva la Vida"" (2008)",Coldplay,SONG_ID_74,https://youtu.be/dvgZkm1xWPE?si=rRJoVzCxXbOgxb5a,No
+"""Playas Gon' Play"" (2001)",3LW,SONG_ID_75,https://youtu.be/dD9A8x_xn5g?si=I9OvVM7zYMjrzRsO,"""Shake It Off"" (2014)",Taylor Swift,SONG_ID_76,https://youtu.be/nfWlot6h_JM?si=kKo0ZWHpfY4PNm64,No
+"""Taurus"" (1968)",Spirit,SONG_ID_77,https://youtu.be/gFHLO_2_THg?si=TaI2B64TG4NX3DmG,"""Stairway to Heaven"" (1971)",Led Zeppelin,SONG_ID_78,https://youtu.be/QkF3oxziUI4?si=-UgeH6W1GOwjiWk2,No
+"""Funk You Up"" (1979)",The Sequence,SONG_ID_79,https://youtu.be/najXKFC9ou8?si=gCf_xXkPeskSxVwN,"""Uptown Funk"" (2014)","Mark Ronson, Bruno Mars",SONG_ID_80,https://youtu.be/7Ya2U8XN_Zw?si=kVUgnEt1YOkZ6vVl,No
+Mercy,Shawn Mendes,SONG_ID_81,https://www.youtube.com/watch?v=KkGVmN68ByU,Mercy (cover),Jason Chen,SONG_ID_82,https://youtu.be/BR9YzyDI6Ok,Undecided
+Wonder,Shawn Mendes,SONG_ID_83,https://youtu.be/fHeQemJJQII,Wonder (cover),James Major,SONG_ID_84,https://youtu.be/8p-MA5Id6xs,Undecided
+Monster,Shawn Mendes,SONG_ID_85,https://youtu.be/MPbUaIZAaeA,Monster (cover),Jason Chen & Joseph Vincent,SONG_ID_86,https://youtu.be/f8XJez9een4,Undecided
+Not Like Us,Kendrick Lamar,SONG_ID_87,https://youtu.be/H58vbez_m4E,I Believe to My Soul,Monk Higgins,SONG_ID_88,https://youtu.be/WRLReQpJFmM,Undecided
+Like That,Future and Metro Boomin feat. Kendrick Lamar,SONG_ID_89,https://youtu.be/N9bKBAA22Go,Everlasting Bass,Rodney O and Joe Cooley,SONG_ID_90,https://youtu.be/XllU_hAVTBE,Undecided
+Meet the Grahams,Kendrick Lamar,SONG_ID_91,https://youtu.be/2QiFl9Dc7D0,I Want to Make It,Timothy Carpenter and Triunity,SONG_ID_92,https://youtu.be/FCzVhcD5rc4,Undecided
