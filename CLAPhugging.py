@@ -16,7 +16,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report, accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.dummy import DummyClassifier
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 from imblearn.over_sampling import SMOTE
 from sklearn.exceptions import UndefinedMetricWarning
 import warnings
@@ -140,7 +141,7 @@ df_results_yes = pd.DataFrame(results_yes)
 df_results_no = pd.DataFrame(results_no)
 df_results_control = pd.DataFrame(results_control)
 
-# Visualization
+# Visualization: Cosine Similarity vs Court Decision
 plt.figure(figsize=(12, 6))
 
 # Plotting results where court decision was "Yes"
@@ -159,7 +160,6 @@ plt.scatter([result['Original Work'] for result in results_control],
             color='blue', label='Control')
 
 # Customize the plot
-plt.axhline(y=0.5, color='gray', linestyle='--')
 plt.xticks(rotation=90)
 plt.xlabel("Original Work")
 plt.ylabel("Cosine Similarity")
@@ -179,18 +179,19 @@ y = df_all['Court decision']
 le = LabelEncoder()
 y_encoded = le.fit_transform(y)
 
-# Handle imbalanced dataset using SMOTE with adjusted k_neighbors
-smote = SMOTE(sampling_strategy='auto', random_state=42, k_neighbors=2)
-X_resampled, y_resampled = smote.fit_resample(X, y_encoded)
+# Split the data into train and test sets before oversampling
+X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.3, random_state=42)
 
-# Split the data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.3, random_state=42)
+# Apply SMOTE only to the training data
+smote = SMOTE(sampling_strategy='auto', random_state=42, k_neighbors=2)
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
 # Initialize models with class_weight adjustment
 svm_model = SVC(kernel='linear', random_state=42, class_weight='balanced')
 rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 dt_model = DecisionTreeClassifier(random_state=42, class_weight='balanced')
 gb_model = GradientBoostingClassifier(random_state=42)
+dummy_model = DummyClassifier(strategy='stratified', random_state=42)
 
 # Hyperparameter tuning with Grid Search
 param_grid_svm = {'C': [0.1, 1, 10]}
@@ -202,22 +203,38 @@ rf_grid = GridSearchCV(rf_model, param_grid_rf, cv=5)
 dt_grid = GridSearchCV(dt_model, param_grid_dt, cv=5)
 
 # Train models with the best parameters
-svm_grid.fit(X_train, y_train)
-rf_grid.fit(X_train, y_train)
-dt_grid.fit(X_train, y_train)
-gb_model.fit(X_train, y_train)
+svm_grid.fit(X_train_resampled, y_train_resampled)
+rf_grid.fit(X_train_resampled, y_train_resampled)
+dt_grid.fit(X_train_resampled, y_train_resampled)
+gb_model.fit(X_train_resampled, y_train_resampled)
+dummy_model.fit(X_train_resampled, y_train_resampled)
 
-# Evaluate models and display confusion matrix
-for model, name in zip([svm_grid, rf_grid, dt_grid, gb_model], 
-                       ['SVM', 'Random Forest', 'Decision Tree', 'Gradient Boosting']):
+# Evaluate models on the non-oversampled test set
+models = [svm_grid, rf_grid, dt_grid, gb_model, dummy_model]
+model_names = ['SVM', 'Random Forest', 'Decision Tree', 'Gradient Boosting', 'Dummy']
+accuracies = []
+
+for model, name in zip(models, model_names):
     print(f"\n{name} Model:")
     y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    accuracies.append(accuracy)
     print(classification_report(y_test, y_pred))
-    print("Accuracy:", accuracy_score(y_test, y_pred))
+    print("Accuracy:", accuracy)
     
     # Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=le.classes_)
     disp.plot(cmap=plt.cm.Blues)
-    plt.title(f"{name} Confusion Matrix")
+    plt.title(f"{name} Confusion Matrix (n={len(y_test)})")
     plt.show()
+
+# Compare model performances
+plt.figure(figsize=(10, 6))
+plt.bar(model_names, accuracies, color=['blue', 'green', 'red', 'purple', 'orange'])
+plt.xlabel("Model")
+plt.ylabel("Accuracy")
+plt.title("Model Accuracy Comparison")
+plt.ylim(0, 1)
+plt.show()
+
