@@ -172,7 +172,7 @@ plt.show()
 
 # Prepare data for machine learning
 df_all = pd.concat([df_results_yes, df_results_no, df_results_control])
-X = df_all[['Similarity']].values  # Use similarity and potentially other features
+X = df_all[['Similarity']].values
 y = df_all['Court decision'].values
 
 # Encode labels
@@ -225,7 +225,7 @@ for model, name in zip([svm_grid, rf_grid, dt_grid, gb_model, dummy_model],
     plt.show()
 
 # Example Prediction Explanation
-example_index = 0  # You can change this index to choose a different test case
+example_index = 0
 example_input = X_test[example_index].reshape(1, -1)
 example_prediction = svm_grid.predict(example_input)[0]
 true_label = y_test[example_index]
