@@ -17,7 +17,7 @@ from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.dummy import DummyClassifier
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report, accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
 from imblearn.over_sampling import SMOTE
 from sklearn.exceptions import UndefinedMetricWarning
 import warnings
@@ -141,7 +141,7 @@ df_results_yes = pd.DataFrame(results_yes)
 df_results_no = pd.DataFrame(results_no)
 df_results_control = pd.DataFrame(results_control)
 
-# Visualization: Cosine Similarity vs Court Decision
+# Visualization
 plt.figure(figsize=(12, 6))
 
 # Plotting results where court decision was "Yes"
@@ -172,17 +172,17 @@ plt.show()
 
 # Prepare data for machine learning
 df_all = pd.concat([df_results_yes, df_results_no, df_results_control])
-X = df_all[['Similarity']]  # Use similarity and potentially other features
-y = df_all['Court decision']
+X = df_all[['Similarity']].values  # Use similarity and potentially other features
+y = df_all['Court decision'].values
 
 # Encode labels
 le = LabelEncoder()
 y_encoded = le.fit_transform(y)
 
-# Split the data into train and test sets before oversampling
+# Split the data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.3, random_state=42)
 
-# Apply SMOTE only to the training data
+# Apply SMOTE only on the training data
 smote = SMOTE(sampling_strategy='auto', random_state=42, k_neighbors=2)
 X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
@@ -191,7 +191,7 @@ svm_model = SVC(kernel='linear', random_state=42, class_weight='balanced')
 rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 dt_model = DecisionTreeClassifier(random_state=42, class_weight='balanced')
 gb_model = GradientBoostingClassifier(random_state=42)
-dummy_model = DummyClassifier(strategy='stratified', random_state=42)
+dummy_model = DummyClassifier(strategy='uniform', random_state=42)
 
 # Hyperparameter tuning with Grid Search
 param_grid_svm = {'C': [0.1, 1, 10]}
@@ -202,25 +202,20 @@ svm_grid = GridSearchCV(svm_model, param_grid_svm, cv=5)
 rf_grid = GridSearchCV(rf_model, param_grid_rf, cv=5)
 dt_grid = GridSearchCV(dt_model, param_grid_dt, cv=5)
 
-# Train models with the best parameters
+# Train models with the best parameters on resampled training data
 svm_grid.fit(X_train_resampled, y_train_resampled)
 rf_grid.fit(X_train_resampled, y_train_resampled)
 dt_grid.fit(X_train_resampled, y_train_resampled)
 gb_model.fit(X_train_resampled, y_train_resampled)
-dummy_model.fit(X_train_resampled, y_train_resampled)
+dummy_model.fit(X_train, y_train)  # Dummy model on original training data
 
-# Evaluate models on the non-oversampled test set
-models = [svm_grid, rf_grid, dt_grid, gb_model, dummy_model]
-model_names = ['SVM', 'Random Forest', 'Decision Tree', 'Gradient Boosting', 'Dummy']
-accuracies = []
-
-for model, name in zip(models, model_names):
+# Evaluate models and display confusion matrix
+for model, name in zip([svm_grid, rf_grid, dt_grid, gb_model, dummy_model], 
+                       ['SVM', 'Random Forest', 'Decision Tree', 'Gradient Boosting', 'Dummy']):
     print(f"\n{name} Model:")
     y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    accuracies.append(accuracy)
     print(classification_report(y_test, y_pred))
-    print("Accuracy:", accuracy)
+    print("Accuracy:", accuracy_score(y_test, y_pred))
     
     # Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
@@ -229,12 +224,30 @@ for model, name in zip(models, model_names):
     plt.title(f"{name} Confusion Matrix (n={len(y_test)})")
     plt.show()
 
-# Compare model performances
+# Example Prediction Explanation
+example_index = 0  # You can change this index to choose a different test case
+example_input = X_test[example_index].reshape(1, -1)
+example_prediction = svm_grid.predict(example_input)[0]
+true_label = y_test[example_index]
+
+print("\nExample Prediction Explanation:")
+print(f"Original Work: {df_all.iloc[example_index]['Original Work']}")
+print(f"Second Song: {df_all.iloc[example_index]['Second Song']}")
+print(f"True Label: {le.inverse_transform([true_label])[0]}")
+print(f"Predicted Label: {le.inverse_transform([example_prediction])[0]}")
+
+# Visualize Model Performance Comparison
+models = ['SVM', 'Random Forest', 'Decision Tree', 'Gradient Boosting', 'Dummy']
+accuracies = [accuracy_score(y_test, svm_grid.predict(X_test)),
+              accuracy_score(y_test, rf_grid.predict(X_test)),
+              accuracy_score(y_test, dt_grid.predict(X_test)),
+              accuracy_score(y_test, gb_model.predict(X_test)),
+              accuracy_score(y_test, dummy_model.predict(X_test))]
+
 plt.figure(figsize=(10, 6))
-plt.bar(model_names, accuracies, color=['blue', 'green', 'red', 'purple', 'orange'])
-plt.xlabel("Model")
-plt.ylabel("Accuracy")
-plt.title("Model Accuracy Comparison")
+plt.bar(models, accuracies, color=['green', 'blue', 'orange', 'red', 'gray'])
 plt.ylim(0, 1)
+plt.ylabel('Accuracy')
+plt.title('Model Performance Comparison')
 plt.show()
 
