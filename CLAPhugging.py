@@ -66,11 +66,11 @@ def compute_similarity(embedding1, embedding2):
     return 1 - cosine(embedding1.flatten(), embedding2.flatten())
 
 # Load dataset from CSV with specified encoding
-data_path = '/Users/army/Desktop/datainCSV.csv'
+data_path = 'your_data_path'
 data = pd.read_csv(data_path, encoding='ISO-8859-1').to_dict(orient='records')
 
 # Define a path to save and load embeddings
-embeddings_file = '/Users/army/Desktop/song_embeddings.json'
+embeddings_file = 'your_embeddings_path'
 
 # Load existing embeddings if the file exists
 if os.path.exists(embeddings_file):
@@ -191,7 +191,7 @@ svm_model = SVC(kernel='linear', random_state=42, class_weight='balanced')
 rf_model = RandomForestClassifier(random_state=42, class_weight='balanced')
 dt_model = DecisionTreeClassifier(random_state=42, class_weight='balanced')
 gb_model = GradientBoostingClassifier(random_state=42)
-dummy_model = DummyClassifier(strategy='uniform', random_state=42)
+dummy_model = DummyClassifier(strategy='stratified', random_state=42)
 
 # Hyperparameter tuning with Grid Search
 param_grid_svm = {'C': [0.1, 1, 10]}
